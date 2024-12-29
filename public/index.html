@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Movie Search & Watch</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Movie Search</h1>
+                <div class="search-container">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search for movies..."
+                    />
+                    <button id="searchButton">Search</button>
+                </div>
+            </header>
+            <div id="results" class="results-grid"></div>
+            <div id="movieModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <div class="movie-player">
+                        <iframe
+                            id="movieIframe"
+                            frameborder="0"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
