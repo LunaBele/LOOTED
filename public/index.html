@@ -1,38 +1,173 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Movie Search & Watch</title>
-        <link rel="stylesheet" href="styles.css" />
-    </head>
-    <body>
-        <div class="container">
-            <header>
-                <h1>Movie Search</h1>
-                <div class="search-container">
-                    <input
-                        type="text"
-                        id="searchInput"
-                        placeholder="Search for movies..."
-                    />
-                    <button id="searchButton">Search</button>
-                </div>
-            </header>
-            <div id="results" class="results-grid"></div>
-            <div id="movieModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <div class="movie-player">
-                        <iframe
-                            id="movieIframe"
-                            frameborder="0"
-                            allowfullscreen
-                        ></iframe>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <script src="script.js"></script>
-    </body>
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Looted Pinay Video Player</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #videoSection {
+      display: none;
+      margin-top: 20px;
+    }
+    video {
+      width: 80%;
+      max-width: 800px;
+      border: 3px solid #fff;
+      border-radius: 10px;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      font-size: 14px;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #errorMsg {
+      color: #ff4444;
+      margin-top: 15px;
+    }
+    #countdown {
+      font-size: 18px;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #0f0;
+    }
+    #keyForm input {
+      padding: 10px;
+      font-size: 16px;
+      width: 250px;
+      border-radius: 6px;
+      border: none;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Enter Access Key to Watch Video</h1>
+
+  <form id="keyForm" onsubmit="return validateKey(event)">
+    <input type="text" id="userKey" placeholder="Enter your key here" autocomplete="off" required />
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="errorMsg"></p>
+
+  <div id="videoSection">
+    <h1 id="title">Loading...</h1>
+    <video id="video" controls autoplay>
+      <source src="" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+    <br />
+    <button onclick="loadVideo()">🔄 Refresh Video</button>
+    <p id="countdown">Time left: --:--:--</p>
+  </div>
+
+  <script>
+    let countdownInterval;
+
+    function formatTime(ms) {
+      if (ms <= 0) return "Expired";
+
+      let totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      totalSeconds %= 3600;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      return (
+        (hours > 0 ? hours.toString().padStart(2, "0") + ":" : "") +
+        minutes.toString().padStart(2, "0") +
+        ":" +
+        seconds.toString().padStart(2, "0")
+      );
+    }
+
+    async function validateKey(event) {
+      event.preventDefault();
+      const keyInput = document.getElementById("userKey").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.textContent = "";
+
+      try {
+        const res = await fetch("/api/validate-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: keyInput }),
+        });
+        const data = await res.json();
+
+        if (data.valid) {
+          document.getElementById("keyForm").style.display = "none";
+          document.getElementById("errorMsg").textContent = "";
+          document.getElementById("videoSection").style.display = "block";
+          startCountdown(data.expiresAt);
+          loadVideo();
+        } else {
+          errorMsg.textContent = "Invalid or expired key. Please try again.";
+        }
+      } catch (err) {
+        errorMsg.textContent = "Error validating key. Try again later.";
+        console.error(err);
+      }
+    }
+
+    function startCountdown(expiresAt) {
+      clearInterval(countdownInterval);
+
+      function updateCountdown() {
+        const timeLeftMs = expiresAt - Date.now();
+        const countdownElem = document.getElementById("countdown");
+
+        if (timeLeftMs <= 0) {
+          countdownElem.textContent = "Key expired. Please refresh and enter a valid key.";
+          clearInterval(countdownInterval);
+          // Lock video and show key form again
+          document.getElementById("videoSection").style.display = "none";
+          document.getElementById("keyForm").style.display = "block";
+          document.getElementById("userKey").value = "";
+        } else {
+          countdownElem.textContent = "Time left: " + formatTime(timeLeftMs);
+        }
+      }
+
+      updateCountdown();
+      countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    async function loadVideo() {
+      try {
+        const res = await fetch("/video-data");
+        const video = await res.json();
+
+        if (video.error) {
+          document.getElementById("title").innerText = "No video found.";
+          return;
+        }
+
+        document.getElementById("title").innerText = video.title;
+        const videoElement = document.getElementById("video");
+        videoElement.src = video.mp4url;
+        videoElement.load();
+        videoElement.play();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+</body>
 </html>

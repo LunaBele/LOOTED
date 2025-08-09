@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Key Generator</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #keyContainer {
+      margin-top: 40px;
+      font-size: 24px;
+      word-break: break-word;
+    }
+    button {
+      background: #28a745;
+      border: none;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #error {
+      color: #ff4444;
+      margin-top: 20px;
+    }
+    input[type="password"],
+    input[type="number"] {
+      font-size: 18px;
+      padding: 10px;
+      width: 250px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+    label {
+      display: inline-block;
+      width: 60px;
+      text-align: right;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Key Generator</h1>
+
+  <div id="loginDiv">
+    <input
+      type="password"
+      id="adminPassword"
+      placeholder="Enter Admin Password"
+      autofocus
+      autocomplete="off"
+    />
+    <br />
+    <button onclick="tryLogin()">Login</button>
+    <p id="error"></p>
+  </div>
+
+  <div id="keygenDiv" style="display:none;">
+    <div>
+      <label for="hours">Hours:</label>
+      <input type="number" id="hours" min="0" value="0" />
+    </div>
+    <div>
+      <label for="minutes">Minutes:</label>
+      <input type="number" id="minutes" min="0" value="1" />
+    </div>
+    <div>
+      <label for="seconds">Seconds:</label>
+      <input type="number" id="seconds" min="0" value="0" />
+    </div>
+    <button onclick="generateKey()">Generate New Key</button>
+    <div id="keyContainer"></div>
+  </div>
+
+  <script>
+    let adminPassword = "";
+
+    function tryLogin() {
+      const pwInput = document.getElementById("adminPassword").value;
+      if (pwInput === "11200805") {
+        adminPassword = pwInput;
+        document.getElementById("loginDiv").style.display = "none";
+        document.getElementById("keygenDiv").style.display = "block";
+        document.getElementById("error").innerText = "";
+      } else {
+        document.getElementById("error").innerText = "Wrong password!";
+      }
+    }
+
+    async function generateKey() {
+      try {
+        const hours = document.getElementById("hours").value;
+        const minutes = document.getElementById("minutes").value;
+        const seconds = document.getElementById("seconds").value;
+
+        const res = await fetch("/api/generate-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            password: adminPassword,
+            hours,
+            minutes,
+            seconds,
+          }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          document.getElementById("keyContainer").innerText = "Error: " + data.error;
+          return;
+        }
+
+        const expireDate = new Date(data.expiresAt);
+        document.getElementById("keyContainer").innerHTML =
+          `<p><strong>Key:</strong> ${data.key}</p>` +
+          `<p><strong>Expires at:</strong> ${expireDate.toLocaleString()}</p>`;
+      } catch (err) {
+        document.getElementById("keyContainer").innerText = "Network error.";
+      }
+    }
+  </script>
+</body>
+</html>
