@@ -1,94 +1,196 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Looted Pinay Video Player</title>
+  <title>LootedP</title>
   <style>
+    /* General Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      background: #111;
-      color: white;
-      text-align: center;
-      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Header Bar */
+    header {
+      width: 100%;
+      background: #202020;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    header h1 {
+      font-size: 24px;
+      color: #ff3d3d;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Main Container */
+    #container {
+      width: 100%;
+      max-width: 950px;
       padding: 20px;
+      animation: fadeIn 0.6s ease-in-out;
     }
-    #videoSection {
-      display: none;
-      margin-top: 20px;
-    }
-    video {
-      width: 80%;
-      max-width: 800px;
-      border: 3px solid #fff;
+
+    /* Card Style Sections */
+    .card {
+      background: #181818;
       border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      margin-bottom: 20px;
+      text-align: center;
+      animation: fadeInUp 0.5s ease-in-out;
     }
-    h1 {
-      font-size: 20px;
-      margin-bottom: 10px;
+
+    /* Input & Button Styles */
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 70%;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+      margin-bottom: 15px;
+      background: #2c2c2c;
+      color: #fff;
     }
     button {
-      margin-top: 10px;
-      padding: 10px 15px;
-      font-size: 14px;
-      background: #fff;
-      color: #000;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #ff3d3d;
+      color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      transition: background 0.2s ease-in-out;
     }
-    #errorMsg {
-      color: #ff4444;
-      margin-top: 15px;
+    button:hover {
+      background: #d82c2c;
     }
+
+    /* Video Player */
+    video {
+      width: 100%;
+      border-radius: 8px;
+      background: black;
+      margin-top: 10px;
+    }
+
+    /* Countdown Animation */
     #countdown {
-      font-size: 18px;
+      font-size: 20px;
       margin-top: 15px;
       font-weight: bold;
       color: #0f0;
+      animation: pulse 1s infinite alternate;
     }
-    #keyForm input {
-      padding: 10px;
-      font-size: 16px;
-      width: 250px;
-      border-radius: 6px;
-      border: none;
-      margin-right: 10px;
+    @keyframes pulse {
+      0% { transform: scale(1); color: #0f0; }
+      100% { transform: scale(1.05); color: #aaffaa; }
+    }
+
+    /* Fade-in Animations */
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+    @keyframes fadeInUp {
+      from {opacity:0; transform:translateY(20px);}
+      to {opacity:1; transform:translateY(0);}
+    }
+
+    /* Error Message */
+    #errorMsg {
+      color: #ff4444;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    /* Used Key Display */
+    #usedKey {
+      font-size: 14px;
+      color: #bbb;
+      margin-top: 8px;
+    }
+
+    /* Hidden Utility */
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Enter Access Key to Watch Video</h1>
+  <header>
+    <h1>LootedP</h1>
+  </header>
 
-  <form id="keyForm" onsubmit="return validateKey(event)">
-    <input type="text" id="userKey" placeholder="Enter your key here" autocomplete="off" required />
-    <button type="submit">Submit</button>
-  </form>
+  <div id="container">
+    <!-- Age Verification -->
+    <div id="ageGate" class="card">
+      <h2>🔞 Age Verification</h2>
+      <p>You must be 18+ to access this content.</p>
+      <div style="margin-top:15px;">
+        <button onclick="verifyAge(true)">I am 18 or older</button>
+        <button onclick="verifyAge(false)" style="background:#555;">I am under 18</button>
+      </div>
+    </div>
 
-  <p id="errorMsg"></p>
+    <!-- Key Entry -->
+    <div id="keySection" class="card hidden">
+      <h2>Enter Access Key</h2>
+      <form id="keyForm" onsubmit="return validateKey(event)">
+        <input type="text" id="userKey" placeholder="Enter your key here" autocomplete="off" required />
+        <br />
+        <button type="submit">Submit</button>
+      </form>
+      <p id="errorMsg"></p>
+    </div>
 
-  <div id="videoSection">
-    <h1 id="title">Loading...</h1>
-    <video id="video" controls autoplay>
-      <source src="" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-    <br />
-    <button onclick="loadVideo()">🔄 Refresh Video</button>
-    <p id="countdown">Time left: --:--:--</p>
+    <!-- Video Section -->
+    <div id="videoSection" class="card hidden">
+      <h2 id="title">Loading...</h2>
+      <video id="video" controls autoplay>
+        <source src="" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      <br />
+      <button onclick="loadVideo()">🔄 Refresh Video</button>
+      <p id="countdown">Time left: --:--:--</p>
+      <p id="usedKey"></p>
+    </div>
   </div>
 
   <script>
     let countdownInterval;
 
+    function verifyAge(isAdult) {
+      if (!isAdult) {
+        alert("You must be 18+ to view this content.");
+        window.location.href = "https://www.google.com";
+        return;
+      }
+      document.getElementById("ageGate").classList.add("hidden");
+      document.getElementById("keySection").classList.remove("hidden");
+    }
+
     function formatTime(ms) {
       if (ms <= 0) return "Expired";
-
       let totalSeconds = Math.floor(ms / 1000);
       const hours = Math.floor(totalSeconds / 3600);
       totalSeconds %= 3600;
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
-
       return (
         (hours > 0 ? hours.toString().padStart(2, "0") + ":" : "") +
         minutes.toString().padStart(2, "0") +
@@ -112,9 +214,9 @@
         const data = await res.json();
 
         if (data.valid) {
-          document.getElementById("keyForm").style.display = "none";
-          document.getElementById("errorMsg").textContent = "";
-          document.getElementById("videoSection").style.display = "block";
+          document.getElementById("keySection").classList.add("hidden");
+          document.getElementById("videoSection").classList.remove("hidden");
+          document.getElementById("usedKey").textContent = "Your Key: " + keyInput;
           startCountdown(data.expiresAt);
           loadVideo();
         } else {
@@ -128,23 +230,19 @@
 
     function startCountdown(expiresAt) {
       clearInterval(countdownInterval);
-
       function updateCountdown() {
         const timeLeftMs = expiresAt - Date.now();
         const countdownElem = document.getElementById("countdown");
-
         if (timeLeftMs <= 0) {
           countdownElem.textContent = "Key expired. Please refresh and enter a valid key.";
           clearInterval(countdownInterval);
-          // Lock video and show key form again
-          document.getElementById("videoSection").style.display = "none";
-          document.getElementById("keyForm").style.display = "block";
+          document.getElementById("videoSection").classList.add("hidden");
+          document.getElementById("keySection").classList.remove("hidden");
           document.getElementById("userKey").value = "";
         } else {
           countdownElem.textContent = "Time left: " + formatTime(timeLeftMs);
         }
       }
-
       updateCountdown();
       countdownInterval = setInterval(updateCountdown, 1000);
     }
@@ -153,12 +251,10 @@
       try {
         const res = await fetch("/video-data");
         const video = await res.json();
-
         if (video.error) {
           document.getElementById("title").innerText = "No video found.";
           return;
         }
-
         document.getElementById("title").innerText = video.title;
         const videoElement = document.getElementById("video");
         videoElement.src = video.mp4url;
