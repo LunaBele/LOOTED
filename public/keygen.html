@@ -6,53 +6,85 @@
   <title>Admin Key Generator</title>
   <style>
     body {
-      background: #111;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
       color: white;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       text-align: center;
       padding: 20px;
     }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
     #keyContainer {
-      margin-top: 40px;
-      font-size: 24px;
+      margin-top: 20px;
+      font-size: 18px;
       word-break: break-word;
     }
     button {
       background: #28a745;
       border: none;
       padding: 12px 20px;
-      font-size: 18px;
+      font-size: 16px;
       border-radius: 6px;
       color: white;
       cursor: pointer;
       margin-top: 10px;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #218838;
+      transform: scale(1.05);
+    }
+    button.danger {
+      background: #dc3545;
+    }
+    button.danger:hover {
+      background: #c82333;
     }
     #error {
       color: #ff4444;
-      margin-top: 20px;
+      margin-top: 10px;
     }
     input[type="password"],
     input[type="number"] {
-      font-size: 18px;
+      font-size: 16px;
       padding: 10px;
       width: 250px;
       margin-top: 10px;
       border-radius: 6px;
       border: none;
+      outline: none;
+      text-align: center;
     }
     label {
       display: inline-block;
-      width: 60px;
+      width: 80px;
       text-align: right;
       margin-right: 10px;
-      font-size: 16px;
+      font-size: 14px;
+    }
+    .flex {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Admin Key Generator</h1>
+  <h1>🔑 Admin Key Generator</h1>
 
-  <div id="loginDiv">
+  <div class="card" id="loginDiv">
     <input
       type="password"
       id="adminPassword"
@@ -65,20 +97,21 @@
     <p id="error"></p>
   </div>
 
-  <div id="keygenDiv" style="display:none;">
-    <div>
+  <div class="card" id="keygenDiv" style="display:none;">
+    <div class="flex">
       <label for="hours">Hours:</label>
       <input type="number" id="hours" min="0" value="0" />
     </div>
-    <div>
+    <div class="flex">
       <label for="minutes">Minutes:</label>
       <input type="number" id="minutes" min="0" value="1" />
     </div>
-    <div>
+    <div class="flex">
       <label for="seconds">Seconds:</label>
       <input type="number" id="seconds" min="0" value="0" />
     </div>
     <button onclick="generateKey()">Generate New Key</button>
+    <button class="danger" onclick="resetAllKeys()">Reset All Keys</button>
     <div id="keyContainer"></div>
   </div>
 
@@ -93,7 +126,7 @@
         document.getElementById("keygenDiv").style.display = "block";
         document.getElementById("error").innerText = "";
       } else {
-        document.getElementById("error").innerText = "Wrong password!";
+        document.getElementById("error").innerText = "❌ Wrong password!";
       }
     }
 
@@ -121,10 +154,30 @@
 
         const expireDate = new Date(data.expiresAt);
         document.getElementById("keyContainer").innerHTML =
-          `<p><strong>Key:</strong> ${data.key}</p>` +
-          `<p><strong>Expires at:</strong> ${expireDate.toLocaleString()}</p>`;
+          `<p><strong>✅ Key:</strong> ${data.key}</p>` +
+          `<p><strong>⏳ Expires at:</strong> ${expireDate.toLocaleString()}</p>`;
       } catch (err) {
-        document.getElementById("keyContainer").innerText = "Network error.";
+        document.getElementById("keyContainer").innerText = "⚠ Network error.";
+      }
+    }
+
+    async function resetAllKeys() {
+      if (!confirm("Are you sure you want to delete ALL keys?")) return;
+
+      try {
+        const res = await fetch("/api/reset-keys", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: adminPassword }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById("keyContainer").innerHTML = `<p style="color:lime;">✔ All keys deleted successfully.</p>`;
+        } else {
+          document.getElementById("keyContainer").innerHTML = `<p style="color:red;">❌ ${data.error}</p>`;
+        }
+      } catch (err) {
+        document.getElementById("keyContainer").innerHTML = `<p style="color:red;">⚠ Network error.</p>`;
       }
     }
   </script>
