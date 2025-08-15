@@ -197,6 +197,13 @@
             box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
         }
         
+        .btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -271,6 +278,11 @@
             font-size: 0.9rem;
             margin-top: 1rem;
             text-align: center;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
         }
         
         .hidden {
@@ -395,7 +407,7 @@
                     <div class="input-group">
                         <input type="text" id="userKey" class="input" placeholder="Enter your access key" autocomplete="off" required />
                     </div>
-                    <button type="submit" class="btn">AUTHENTICATE</button>
+                    <button type="submit" class="btn" id="submitBtn">AUTHENTICATE</button>
                 </form>
                 <div id="errorMsg" class="error-msg"></div>
             </div>
@@ -467,28 +479,49 @@
             
             const keyInput = document.getElementById("userKey").value.trim();
             const errorMsg = document.getElementById("errorMsg");
+            const submitBtn = document.getElementById("submitBtn");
+            const keyForm = document.getElementById("keyForm");
             
+            // <CHANGE> Clear previous errors and show loading state
             errorMsg.textContent = "";
+            submitBtn.disabled = true;
+            submitBtn.textContent = "VALIDATING...";
+            keyForm.classList.add("loading");
             
-            // Simulate key validation (replace with actual API call)
-            const validKeys = ["DEMO123", "ACCESS456", "PREMIUM789"];
-            const isValid = validKeys.includes(keyInput.toUpperCase());
-            
-            if (isValid) {
-                document.getElementById("keySection").classList.add("hidden");
-                document.getElementById("contentSection").classList.remove("hidden");
-                document.getElementById("keyInfo").textContent = `Access Key: ${keyInput.toUpperCase()}`;
+            try {
+                // <CHANGE> Use actual backend API endpoint
+                const response = await fetch("/api/validate-key", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ key: keyInput }),
+                });
                 
-                // Set expiration time (30 minutes from now)
-                const expiresAt = Date.now() + (30 * 60 * 1000);
-                startCountdown(expiresAt);
-                loadContent();
-            } else {
-                errorMsg.textContent = "Invalid access key. Please try again.";
-                document.getElementById("userKey").style.borderColor = "#ff4757";
-                setTimeout(() => {
-                    document.getElementById("userKey").style.borderColor = "rgba(0, 212, 255, 0.3)";
-                }, 2000);
+                const data = await response.json();
+                
+                if (data.valid) {
+                    // <CHANGE> Handle successful validation with backend response
+                    document.getElementById("keySection").classList.add("hidden");
+                    document.getElementById("contentSection").classList.remove("hidden");
+                    document.getElementById("keyInfo").textContent = `Access Key: ${keyInput}`;
+                    
+                    startCountdown(data.expiresAt);
+                    loadContent();
+                } else {
+                    // <CHANGE> Show specific error message from backend
+                    errorMsg.textContent = data.reason || "Invalid or expired key. Please try again.";
+                    document.getElementById("userKey").style.borderColor = "#ff4757";
+                    setTimeout(() => {
+                        document.getElementById("userKey").style.borderColor = "rgba(0, 212, 255, 0.3)";
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error("Key validation error:", error);
+                errorMsg.textContent = "Connection error. Please try again.";
+            } finally {
+                // <CHANGE> Reset button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = "AUTHENTICATE";
+                keyForm.classList.remove("loading");
             }
         }
 
@@ -508,6 +541,7 @@
                         document.getElementById("contentSection").classList.add("hidden");
                         document.getElementById("keySection").classList.remove("hidden");
                         document.getElementById("userKey").value = "";
+                        document.getElementById("errorMsg").textContent = "";
                     }, 2000);
                 } else {
                     countdownElem.textContent = `Session: ${formatTime(timeLeft)}`;
@@ -526,21 +560,28 @@
         }
 
         async function loadContent() {
-            // Simulate content loading
-            const titles = [
-                "Premium Content Stream",
-                "Exclusive Access Video",
-                "VIP Member Content",
-                "Special Feature Presentation"
-            ];
-            
-            const randomTitle = titles[Math.floor(Math.random() * titles.length)];
-            document.getElementById("contentTitle").textContent = randomTitle;
-            
-            // Simulate video URL (replace with actual content)
-            const videoElement = document.getElementById("contentVideo");
-            videoElement.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-            videoElement.load();
+            try {
+                // <CHANGE> Use actual backend video data endpoint
+                const response = await fetch("/video-data");
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById("contentTitle").textContent = "No content available";
+                    return;
+                }
+                
+                // <CHANGE> Use actual video data from backend API
+                document.getElementById("contentTitle").textContent = data.title || "Premium Content";
+                
+                const videoElement = document.getElementById("contentVideo");
+                videoElement.src = data.mp4url || data.url;
+                videoElement.load();
+                videoElement.play().catch(e => console.log("Autoplay prevented:", e));
+                
+            } catch (error) {
+                console.error("Content loading error:", error);
+                document.getElementById("contentTitle").textContent = "Error loading content";
+            }
         }
 
         function refreshContent() {
@@ -567,8 +608,6 @@
                 }
             }, 1000);
         }
-
-        // Demo keys for testing: DEMO123, ACCESS456, PREMIUM789
     </script>
 </body>
 </html>
