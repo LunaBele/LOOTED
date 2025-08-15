@@ -1,287 +1,574 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LootedP</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #0f0f0f;
-      color: #fff;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-    header {
-      width: 100%;
-      background: #202020;
-      padding: 15px 20px;
-      display: flex;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-    header h1 {
-      font-size: 24px;
-      color: #ff3d3d;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-    #container {
-      width: 100%;
-      max-width: 950px;
-      padding: 20px;
-      animation: fadeIn 0.6s ease-in-out;
-    }
-    .card {
-      background: #181818;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      margin-bottom: 20px;
-      text-align: center;
-      animation: fadeInUp 0.5s ease-in-out;
-    }
-    input {
-      padding: 10px;
-      font-size: 16px;
-      width: 70%;
-      border-radius: 5px;
-      border: none;
-      outline: none;
-      margin-bottom: 15px;
-      background: #2c2c2c;
-      color: #fff;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #ff3d3d;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.2s ease-in-out;
-    }
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
-    }
-    button:hover:enabled {
-      background: #d82c2c;
-    }
-    video {
-      width: 100%;
-      border-radius: 8px;
-      background: black;
-      margin-top: 10px;
-    }
-    #countdown {
-      font-size: 20px;
-      margin-top: 15px;
-      font-weight: bold;
-      color: #0f0;
-      animation: pulse 1s infinite alternate;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); color: #0f0; }
-      100% { transform: scale(1.05); color: #aaffaa; }
-    }
-    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-    @keyframes fadeInUp {
-      from {opacity:0; transform:translateY(20px);}
-      to {opacity:1; transform:translateY(0);}
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-5px); }
-      40% { transform: translateX(5px); }
-      60% { transform: translateX(-5px); }
-      80% { transform: translateX(5px); }
-    }
-    .shake { animation: shake 0.5s infinite; }
-    #errorMsg {
-      color: #ff4444;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    #usedKey {
-      font-size: 14px;
-      color: #bbb;
-      margin-top: 8px;
-    }
-    .hidden { display: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* Intro Animation */
+        #intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: introFadeOut 1s ease-in-out 4s forwards;
+        }
+        
+        .intro-content {
+            text-align: center;
+            position: relative;
+        }
+        
+        .intro-logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00D4FF, #6B46C1, #00D4FF);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 2s ease-in-out infinite, logoGlow 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+        
+        .intro-tagline {
+            font-size: 1.2rem;
+            color: #00D4FF;
+            margin-top: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 1.5s forwards;
+            letter-spacing: 2px;
+        }
+        
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00D4FF;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Main App */
+        #app {
+            opacity: 0;
+            animation: appFadeIn 1s ease-out 5s forwards;
+        }
+        
+        .header {
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #00D4FF, #6B46C1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .card:hover::before {
+            left: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 25px 50px rgba(0, 212, 255, 0.1);
+        }
+        
+        .card h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #00D4FF;
+            text-align: center;
+        }
+        
+        .age-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #6B46C1, #00D4FF);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #00D4FF, #6B46C1);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+        
+        .btn:hover::before {
+            left: 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary::before {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .input-group {
+            margin-bottom: 2rem;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 1.2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .input:focus {
+            border-color: #00D4FF;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .video-container {
+            text-align: center;
+        }
+        
+        .video {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            margin: 1.5rem 0;
+        }
+        
+        .countdown {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00D4FF;
+            margin: 1.5rem 0;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .countdown.warning {
+            color: #ff4757;
+            animation: shake 0.5s ease-in-out infinite;
+        }
+        
+        .error-msg {
+            color: #ff4757;
+            font-weight: 600;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .key-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Animations */
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 30px rgba(0, 212, 255, 0.5); }
+            50% { text-shadow: 0 0 50px rgba(107, 70, 193, 0.8), 0 0 70px rgba(0, 212, 255, 0.6); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes introFadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+        
+        @keyframes appFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-100px) rotate(180deg);
+                opacity: 0.5;
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .intro-logo {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .age-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>LootedP</h1>
-  </header>
-
-  <div id="container">
-    <div id="ageGate" class="card">
-      <h2>🔞 Age Verification</h2>
-      <p>You must be 18+ to access this content.</p>
-      <div style="margin-top:15px;">
-        <button onclick="verifyAge(true)">I am 18 or older</button>
-        <button onclick="verifyAge(false)" style="background:#555;">I am under 18</button>
-      </div>
+    <!-- Intro Animation -->
+    <div id="intro">
+        <div class="particles"></div>
+        <div class="intro-content">
+            <div class="intro-logo">NEXUS</div>
+            <div class="intro-tagline">ACCESS GRANTED</div>
+        </div>
     </div>
 
-    <div id="keySection" class="card hidden">
-      <h2>Enter Access Key</h2>
-      <form id="keyForm" onsubmit="return validateKey(event)">
-        <input type="text" id="userKey" placeholder="Enter your key here" autocomplete="off" required />
-        <br />
-        <button type="submit">Submit</button>
-      </form>
-      <p id="errorMsg"></p>
+    <!-- Main Application -->
+    <div id="app">
+        <header class="header">
+            <h1>NEXUS</h1>
+        </header>
+
+        <div class="container">
+            <!-- Age Verification -->
+            <div id="ageGate" class="card">
+                <h2>🔒 Access Verification</h2>
+                <p style="text-align: center; margin-bottom: 1rem; color: rgba(255,255,255,0.8);">
+                    Verify your eligibility to access premium content
+                </p>
+                <div class="age-buttons">
+                    <button class="btn" onclick="verifyAge(true)">I am 18 or older</button>
+                    <button class="btn btn-secondary" onclick="verifyAge(false)">I am under 18</button>
+                </div>
+            </div>
+
+            <!-- Key Entry -->
+            <div id="keySection" class="card hidden">
+                <h2>🔑 Enter Access Key</h2>
+                <form id="keyForm" onsubmit="return validateKey(event)">
+                    <div class="input-group">
+                        <input type="text" id="userKey" class="input" placeholder="Enter your access key" autocomplete="off" required />
+                    </div>
+                    <button type="submit" class="btn">AUTHENTICATE</button>
+                </form>
+                <div id="errorMsg" class="error-msg"></div>
+            </div>
+
+            <!-- Content Section -->
+            <div id="contentSection" class="card hidden">
+                <div class="video-container">
+                    <h2 id="contentTitle">Loading Content...</h2>
+                    <video id="contentVideo" class="video" controls autoplay>
+                        <source src="" type="video/mp4" />
+                        Your browser does not support video playback.
+                    </video>
+                    <div>
+                        <button id="refreshBtn" class="btn" onclick="refreshContent()">🔄 Refresh</button>
+                    </div>
+                    <div id="countdown" class="countdown">Session Active</div>
+                    <div id="keyInfo" class="key-info"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="videoSection" class="card hidden">
-      <h2 id="title">Loading...</h2>
-      <video id="video" controls autoplay>
-        <source src="" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-      <br />
-      <button id="refreshBtn" onclick="refreshVideo()">🔄 Refresh Video</button>
-      <p id="countdown">Time left: --:--:--</p>
-      <p id="usedKey"></p>
-    </div>
-  </div>
+    <script>
+        let countdownInterval, refreshCooldown = false;
 
-  <script>
-    let countdownInterval, refreshCooldown = false;
-
-    function verifyAge(isAdult) {
-      if (!isAdult) {
-        alert("You must be 18+ to view this content.");
-        window.location.href = "https://www.google.com";
-        return;
-      }
-      document.getElementById("ageGate").classList.add("hidden");
-      document.getElementById("keySection").classList.remove("hidden");
-    }
-
-    function formatTime(ms) {
-      if (ms <= 0) return "Expired";
-      let totalSeconds = Math.floor(ms / 1000);
-      const hours = Math.floor(totalSeconds / 3600);
-      totalSeconds %= 3600;
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      return (
-        (hours > 0 ? hours.toString().padStart(2, "0") + ":" : "") +
-        minutes.toString().padStart(2, "0") +
-        ":" +
-        seconds.toString().padStart(2, "0")
-      );
-    }
-
-    async function validateKey(event) {
-      event.preventDefault();
-      const keyInput = document.getElementById("userKey").value.trim();
-      const errorMsg = document.getElementById("errorMsg");
-      errorMsg.textContent = "";
-
-      try {
-        const res = await fetch("/api/validate-key", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: keyInput }),
-        });
-        const data = await res.json();
-
-        if (data.valid) {
-          document.getElementById("keySection").classList.add("hidden");
-          document.getElementById("videoSection").classList.remove("hidden");
-          document.getElementById("usedKey").textContent = "Your Key: " + keyInput;
-          startCountdown(data.expiresAt);
-          loadVideo();
-        } else {
-          errorMsg.textContent = "Invalid or expired key. Please try again.";
+        // Create floating particles
+        function createParticles() {
+            const particles = document.querySelector('.particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particles.appendChild(particle);
+            }
         }
-      } catch (err) {
-        errorMsg.textContent = "Error validating key. Try again later.";
-        console.error(err);
-      }
-    }
 
-    function startCountdown(expiresAt) {
-      clearInterval(countdownInterval);
-      const countdownElem = document.getElementById("countdown");
+        // Initialize particles on load
+        createParticles();
 
-      function updateCountdown() {
-        const timeLeftMs = expiresAt - Date.now();
-
-        if (timeLeftMs <= 0) {
-          countdownElem.textContent = "Key expired. Please refresh and enter a valid key.";
-          countdownElem.style.color = "#ff0000";
-          countdownElem.classList.remove("shake");
-          clearInterval(countdownInterval);
-          document.getElementById("videoSection").classList.add("hidden");
-          document.getElementById("keySection").classList.remove("hidden");
-          document.getElementById("userKey").value = "";
-        } else {
-          countdownElem.textContent = "Time left: " + formatTime(timeLeftMs);
-
-          // Turn red & shake when ≤ 20s
-          if (timeLeftMs <= 20000) {
-            countdownElem.style.color = "#ff0000";
-            countdownElem.classList.add("shake");
-            if (navigator.vibrate) navigator.vibrate(500); // Phone vibration
-          } else {
-            countdownElem.style.color = "#0f0";
-            countdownElem.classList.remove("shake");
-          }
+        function verifyAge(isAdult) {
+            if (!isAdult) {
+                alert("Access denied. You must be 18 or older.");
+                window.location.href = "https://www.google.com";
+                return;
+            }
+            
+            document.getElementById("ageGate").classList.add("hidden");
+            document.getElementById("keySection").classList.remove("hidden");
         }
-      }
-      updateCountdown();
-      countdownInterval = setInterval(updateCountdown, 1000);
-    }
 
-    async function loadVideo() {
-      try {
-        const res = await fetch("/video-data");
-        const video = await res.json();
-        if (video.error) {
-          document.getElementById("title").innerText = "No video found.";
-          return;
+        function formatTime(ms) {
+            if (ms <= 0) return "EXPIRED";
+            
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            return (hours > 0 ? hours.toString().padStart(2, "0") + ":" : "") +
+                   minutes.toString().padStart(2, "0") + ":" +
+                   seconds.toString().padStart(2, "0");
         }
-        document.getElementById("title").innerText = video.title;
-        const videoElement = document.getElementById("video");
-        videoElement.src = video.mp4url;
-        videoElement.load();
-        videoElement.play();
-      } catch (err) {
-        console.error(err);
-      }
-    }
 
-    function refreshVideo() {
-      if (refreshCooldown) return;
-
-      loadVideo();
-      const btn = document.getElementById("refreshBtn");
-      refreshCooldown = true;
-      let cooldownTime = 30;
-      btn.disabled = true;
-      btn.textContent = `Wait ${cooldownTime}s`;
-
-      const cooldownInterval = setInterval(() => {
-        cooldownTime--;
-        btn.textContent = `Wait ${cooldownTime}s`;
-        if (cooldownTime <= 0) {
-          clearInterval(cooldownInterval);
-          refreshCooldown = false;
-          btn.disabled = false;
-          btn.textContent = "🔄 Refresh Video";
+        async function validateKey(event) {
+            event.preventDefault();
+            
+            const keyInput = document.getElementById("userKey").value.trim();
+            const errorMsg = document.getElementById("errorMsg");
+            
+            errorMsg.textContent = "";
+            
+            // Simulate key validation (replace with actual API call)
+            const validKeys = ["DEMO123", "ACCESS456", "PREMIUM789"];
+            const isValid = validKeys.includes(keyInput.toUpperCase());
+            
+            if (isValid) {
+                document.getElementById("keySection").classList.add("hidden");
+                document.getElementById("contentSection").classList.remove("hidden");
+                document.getElementById("keyInfo").textContent = `Access Key: ${keyInput.toUpperCase()}`;
+                
+                // Set expiration time (30 minutes from now)
+                const expiresAt = Date.now() + (30 * 60 * 1000);
+                startCountdown(expiresAt);
+                loadContent();
+            } else {
+                errorMsg.textContent = "Invalid access key. Please try again.";
+                document.getElementById("userKey").style.borderColor = "#ff4757";
+                setTimeout(() => {
+                    document.getElementById("userKey").style.borderColor = "rgba(0, 212, 255, 0.3)";
+                }, 2000);
+            }
         }
-      }, 1000);
-    }
-  </script>
+
+        function startCountdown(expiresAt) {
+            clearInterval(countdownInterval);
+            const countdownElem = document.getElementById("countdown");
+            
+            function updateCountdown() {
+                const timeLeft = expiresAt - Date.now();
+                
+                if (timeLeft <= 0) {
+                    countdownElem.textContent = "SESSION EXPIRED";
+                    countdownElem.classList.add("warning");
+                    clearInterval(countdownInterval);
+                    
+                    setTimeout(() => {
+                        document.getElementById("contentSection").classList.add("hidden");
+                        document.getElementById("keySection").classList.remove("hidden");
+                        document.getElementById("userKey").value = "";
+                    }, 2000);
+                } else {
+                    countdownElem.textContent = `Session: ${formatTime(timeLeft)}`;
+                    
+                    if (timeLeft <= 60000) { // Last minute
+                        countdownElem.classList.add("warning");
+                        if (navigator.vibrate) navigator.vibrate(200);
+                    } else {
+                        countdownElem.classList.remove("warning");
+                    }
+                }
+            }
+            
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        async function loadContent() {
+            // Simulate content loading
+            const titles = [
+                "Premium Content Stream",
+                "Exclusive Access Video",
+                "VIP Member Content",
+                "Special Feature Presentation"
+            ];
+            
+            const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+            document.getElementById("contentTitle").textContent = randomTitle;
+            
+            // Simulate video URL (replace with actual content)
+            const videoElement = document.getElementById("contentVideo");
+            videoElement.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+            videoElement.load();
+        }
+
+        function refreshContent() {
+            if (refreshCooldown) return;
+            
+            loadContent();
+            
+            const btn = document.getElementById("refreshBtn");
+            refreshCooldown = true;
+            let cooldownTime = 15;
+            
+            btn.disabled = true;
+            btn.textContent = `Wait ${cooldownTime}s`;
+            
+            const cooldownInterval = setInterval(() => {
+                cooldownTime--;
+                btn.textContent = `Wait ${cooldownTime}s`;
+                
+                if (cooldownTime <= 0) {
+                    clearInterval(cooldownInterval);
+                    refreshCooldown = false;
+                    btn.disabled = false;
+                    btn.textContent = "🔄 Refresh";
+                }
+            }, 1000);
+        }
+
+        // Demo keys for testing: DEMO123, ACCESS456, PREMIUM789
+    </script>
 </body>
 </html>
